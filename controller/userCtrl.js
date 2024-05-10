@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const {generateToken} = require("../config/jwtToken");
+const validateMongoDbId  = require('../utils/validateMongodbId');
 
 // Create a User ----------------------------------------------
 
@@ -87,5 +88,103 @@ const getaUser = asyncHandler(async (req, res) => {
   }
 });
 
+
+// Delete A User 
+const deleteaUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  //validateMongoDbId(id);
+
+  try {
+    const deleteaUser = await User.findByIdAndDelete(id);
+    res.json({
+      deleteaUser,
+    });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
   
-  module.exports  = {createUser, loginUserCtrl, getallUser, getaUser};
+
+// Update a user
+
+const updatedUser = asyncHandler(async (req, res) => {
+  //console.log();
+  const {_id} = req.user;
+  //validateMongoDbId(_id);
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      _id,
+      {
+        firstname: req?.body?.firstname,
+        lastname: req?.body?.lastname,
+        email: req?.body?.email,
+        mobile: req?.body?.mobile,
+      },
+      {
+        new: true,
+      }
+    );
+    res.json(updatedUser);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//block user endpoint 
+const blockUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongoDbId(id);
+
+  try {
+    const blockuser = await User.findByIdAndUpdate(
+      id,
+      {
+        isBlocked: true,
+      },
+      {
+        new: true,
+      }
+    );
+    res.json({msg:"User Blocked", blockuser});
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+// unblock user endpoint
+const unblockUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongoDbId(id);
+
+  try {
+    const unblock = await User.findByIdAndUpdate(
+      id,
+      {
+        isBlocked: false,
+      },
+      {
+        new: true,
+      }
+    );
+    res.json({msg:"User UnBlocked", unblock})
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+  
+
+
+
+
+ module.exports  = {createUser,
+   loginUserCtrl, 
+   getallUser, 
+   getaUser,
+    deleteaUser,
+     updatedUser,
+      blockUser, 
+     unblockUser
+    };
+
